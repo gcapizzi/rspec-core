@@ -24,11 +24,14 @@ module RSpec
       end
 
       def parse_options
-        @options ||= extract_filters_from(*all_configs).inject do |merged, pending|
-          merged.merge(pending) { |key, oldval, newval|
-            MERGED_OPTIONS.include?(key) ? oldval + newval : newval
+        @options = (file_options << command_line_options << env_options).
+          each   {|o| filter_manager.include o.delete(:inclusion_filter) if o.has_key?(:inclusion_filter)}.
+          each   {|o| filter_manager.exclude o.delete(:exclusion_filter) if o.has_key?(:exclusion_filter)}.
+          inject {|h, o|
+            h.merge(o) {|k, oldval, newval|
+              [:libs, :requires].include?(k) ? oldval + newval : newval
+            }
           }
-        end
       end
 
       def drb_argv
@@ -45,8 +48,6 @@ module RSpec
         :requires, :profile, :drb, :libs, :files_or_directories_to_run,
         :line_numbers, :full_description, :full_backtrace, :tty
       ].to_set
-
-      MERGED_OPTIONS = [:requires, :libs].to_set
 
       UNPROCESSABLE_OPTIONS = [:libs, :formatters, :requires].to_set
 
@@ -71,17 +72,6 @@ module RSpec
 
       def load_formatters_into(config)
         options[:formatters].each { |pair| config.add_formatter(*pair) } if options[:formatters]
-      end
-
-      def extract_filters_from(*configs)
-        configs.compact.each do |config|
-          filter_manager.include config.delete(:inclusion_filter) if config.has_key?(:inclusion_filter)
-          filter_manager.exclude config.delete(:exclusion_filter) if config.has_key?(:exclusion_filter)
-        end
-      end
-
-      def all_configs
-        @all_configs ||= file_options << command_line_options << env_options
       end
 
       def file_options
