@@ -44,7 +44,7 @@ module RSpec
 
     private
 
-      NON_FORCED_OPTIONS = [
+      UNFORCED_OPTIONS = [
         :requires, :profile, :drb, :libs, :files_or_directories_to_run,
         :line_numbers, :full_description, :full_backtrace, :tty
       ].to_set
@@ -52,7 +52,7 @@ module RSpec
       UNPROCESSABLE_OPTIONS = [:libs, :formatters, :requires].to_set
 
       def force?(key)
-        !NON_FORCED_OPTIONS.include?(key)
+        !UNFORCED_OPTIONS.include?(key)
       end
 
       def process_options_into(config)
