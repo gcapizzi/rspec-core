@@ -55,10 +55,19 @@ module RSpec
         !UNFORCED_OPTIONS.include?(key)
       end
 
+      def order(keys, *ordered)
+        ordered.reverse.each do |key|
+          keys.unshift(key) if keys.delete(key)
+        end
+        keys
+      end
+
       def process_options_into(config)
-        options.
-          select {|k,_| !UNPROCESSABLE_OPTIONS.include? k}.
-          each   {|k,v| force?(k) ? config.force(k => v) : config.send("#{k}=", v)}
+        opts = options.reject { |k, _| UNPROCESSABLE_OPTIONS.include? k }
+
+        order(opts.keys, :default_path, :pattern).each do |key|
+          force?(key) ? config.force(key => opts[key]) : config.send("#{key}=", opts[key])
+        end
       end
 
       def load_formatters_into(config)
