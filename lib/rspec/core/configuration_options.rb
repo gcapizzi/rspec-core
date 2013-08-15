@@ -8,14 +8,9 @@ module RSpec
       attr_reader :options
 
       def initialize(args)
-        @args = args.dup
-        if @args.include?("--default_path")
-          @args[@args.index("--default_path")] = "--default-path"
-        end
-
-        if @args.include?("--line_number")
-          @args[@args.index("--line_number")] = "--line-number"
-        end
+        @args = args.
+          map {|a| a.sub("default_path", "default-path")}.
+          map {|a| a.sub("line_number",  "line-number")}
       end
 
       def configure(config)
