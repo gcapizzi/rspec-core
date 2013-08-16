@@ -25,10 +25,12 @@ module RSpec
 
       def parse_options
         @options = (file_options << command_line_options << env_options).
-          each   {|o| filter_manager.include o.delete(:inclusion_filter) if o.has_key?(:inclusion_filter)}.
-          each   {|o| filter_manager.exclude o.delete(:exclusion_filter) if o.has_key?(:exclusion_filter)}.
-          inject {|h, o|
-            h.merge(o) {|k, oldval, newval|
+          each {|opts|
+            filter_manager.include opts.delete(:inclusion_filter) if opts.has_key?(:inclusion_filter)
+            filter_manager.exclude opts.delete(:exclusion_filter) if opts.has_key?(:exclusion_filter)
+          }.
+          inject {|h, opts|
+            h.merge(opts) {|k, oldval, newval|
               [:libs, :requires].include?(k) ? oldval + newval : newval
             }
           }
